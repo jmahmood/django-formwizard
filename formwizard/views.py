@@ -382,6 +382,14 @@ class WizardView(TemplateView):
         if issubclass(self.form_list[step], forms.ModelForm):
             # If the form is based on ModelForm, add instance if available.
             kwargs.update({'instance': self.get_form_instance(step)})
+        elif issubclass(self.form_list[step], forms.models.BaseInlineFormSet):
+            # BaseInlineFormSet is based on ModelFormSet but has some significant differences.
+            # It breaks if initial is passed.
+            # Furthermore, you need to pass it an instance from which
+            # it gets the relationship needed, not a queryset.
+            # See Inline Formset docs here: https://docs.djangoproject.com/en/dev/topics/forms/modelforms/
+            del(kwargs['initial'])
+            kwargs.update({'instance': self.get_form_instance(step)})
         elif issubclass(self.form_list[step], forms.models.BaseModelFormSet):
             # If the form is based on ModelFormSet, add queryset if available.
             kwargs.update({'queryset': self.get_form_instance(step)})
